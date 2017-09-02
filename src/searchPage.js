@@ -1,19 +1,51 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import * as BooksAPI from './BooksAPI'
+import BookShelf from './bookShelf'
 
 class SearchPage extends React.Component {
   state = {
+    query: '',
     books: []
   }
 
-  componentDidMount() {
-    BooksAPI.getAll().then((books) => {
-      this.setState({books})
-    })
+  updateQuery = (query) => {
+    this.setState({ query: query.trim()})
+  }
+
+  searchQuery = (bookName) => {
+      BooksAPI.search(bookName, 20).then(
+        books => {
+          this.setState({books})
+        }
+      ).catch(this.setState({
+        books: undefined
+      }))
   }
 
   render () {
+    const { query, books } = this.state;
+    const { bookInLib } = this.props;
+
+    if(bookInLib && books) {
+      for (let book of bookInLib) {
+        for (let result of books) {
+          if (book.id === result.id) {
+            result.shelf = book.shelf;
+          }
+        }
+      }
+    }
+    // let showingBooks
+    // if (this.state.query) {
+    //   const match = new RegExp(escapeRegExp(this.state.query), 'i')
+    //   showingBooks = this.state.books.filter((book) => match.test(book.title))
+    // } else {
+    //   showingBooks = this.state.books
+    // }
+    // const {  } = this.props;
+
+
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -27,33 +59,27 @@ class SearchPage extends React.Component {
               However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
               you don't find a specific author or title. Every search is limited by search terms.
             */}
-            <input type="text" placeholder="Search by title or author"/>
+            <input
+            type="text"
+            placeholder="Search by title or author"
+            value={query}
+            onChange={(event) => {
+              this.searchQuery(event.target.value)
+              this.updateQuery(event.target.value)
+            }}
+            />
 
           </div>
         </div>
         <div className="search-books-results">
-          <ol className="books-grid">
-            {this.state.books.map((book) => (
-              <li>
-                <div className="book">
-                  <div className="book-top">
-                    <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url(${book.imageLinks.thumbnail})` }}></div>
-                    <div className="book-shelf-changer">
-                      <select>
-                        <option value="none" disabled>Move to...</option>
-                        <option value="currentlyReading">Currently Reading</option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="book-title">{book.title}</div>
-                  <div className="book-authors">{book.authors}</div>
-                </div>
-              </li>
-            ))}
-          </ol>
+          {books !== undefined && (
+            <BookShelf
+            shelf="Search Results"
+            books={books}
+            onChangeShelf={(book, shelf) => {
+              this.props.updateShelf(book, shelf);
+            }}/>
+          )}
         </div>
       </div>
     )
