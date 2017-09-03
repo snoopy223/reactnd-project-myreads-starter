@@ -36,15 +36,6 @@ class SearchPage extends React.Component {
         }
       }
     }
-    // let showingBooks
-    // if (this.state.query) {
-    //   const match = new RegExp(escapeRegExp(this.state.query), 'i')
-    //   showingBooks = this.state.books.filter((book) => match.test(book.title))
-    // } else {
-    //   showingBooks = this.state.books
-    // }
-    // const {  } = this.props;
-
 
     return (
       <div className="search-books">
